@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/home/mark/Projects/AndroidExample/app/libs/deepbelief.jar"
+        jumboMode="false"
+        revision="23.0.0"
+        sha1="48753e96b05bcae1e111df5c0cc1f6bf9963fc32">
+        <dex dex="/home/mark/Projects/AndroidExample/app/build/intermediates/pre-dexed/debug/deepbelief-5b4c73e19670f1f582823e2489550d5b786e9e55.jar" />
+    </item>
+    <item
+        jar="/home/mark/Projects/Trainer/app/libs/deepbelief.jar"
+        jumboMode="false"
+        revision="23.0.0"
+        sha1="48753e96b05bcae1e111df5c0cc1f6bf9963fc32">
+        <dex dex="/home/mark/Projects/Trainer/app/build/intermediates/pre-dexed/debug/deepbelief-503a8bb7e1cf47bee44314acacd313be8f182a15.jar" />
+    </item>
+
+</items>
