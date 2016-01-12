@@ -48,6 +48,7 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 public class CamTestActivity extends Activity {
+	//used for organizing functionality in a case based format
 	public enum predictionState{
 		eWaiting,
 		ePositiveLearning,
@@ -65,10 +66,12 @@ public class CamTestActivity extends Activity {
 	Activity act;
 	Context ctx;
 
+	//Pointer varaibles for jpcnn api
 	Pointer networkHandle = null;
 	Pointer trainerHandle = null;
 	Pointer predictor = null;
 
+	//Limit values for predictions
 	int kPosPreT = 100;
 	int kNegPreT = 100;
 	int kElePerPre = 4096;
@@ -78,8 +81,10 @@ public class CamTestActivity extends Activity {
 	int posPreC;
 	int negPreC;
 
+	//begin in eWaiting state
 	predictionState state = predictionState.eWaiting;
 
+	//function to trigger next state
 	public void triggerNextState(){
 		switch (state){
 			case eWaiting:
@@ -200,7 +205,6 @@ public class CamTestActivity extends Activity {
 		String networkFile = dataDir + "/" + baseFileName;
 		copyAsset(am, baseFileName, networkFile);
 	    networkHandle = JPCNNLibrary.INSTANCE.jpcnn_create_network(networkFile);
-		trainerHandle = JPCNNLibrary.INSTANCE.jpcnn_create_trainer();
 
 	    Bitmap lenaBitmap = getBitmapFromAsset("lena.png"); 
 	    classifyBitmap(lenaBitmap);
@@ -267,7 +271,7 @@ public class CamTestActivity extends Activity {
 	    Pointer[] predictionsNames = predictionsNamesPointer.getPointerArray(0);
 
 		//Send predictions to predictionHandler
-		predictionHander(predictionsValuesPointer, predictionsLength);
+		predictionHandler(predictionsValuesPointer, predictionsLength);
 
 		ArrayList<PredictionLabel> foundLabels = new ArrayList<PredictionLabel>();
 	    for (int index = 0; index < predictionsLength; index += 1) {
@@ -284,11 +288,26 @@ public class CamTestActivity extends Activity {
 	    for (PredictionLabel label : foundLabels) {
 	    	labelsText += String.format("%s - %.2f\n", label.name, label.predictionValue);
 	    }
+		Log.i(Cast(state), "state");
 	    labelsView.setText(labelsText);
 	}
+	//for logging state
+	public String Cast(predictionState e){
+		switch(e){
+			case eWaiting:
+				return "eWaiting";
+			case ePositiveLearning:
+				return "ePositiveLearning";
+			case eNegativeWaiting:
+				return "eNegativeWaiting";
+			case eNegativeLearning:
+				return "eNegativeLearning";
+			case ePredicting:
+				return "ePredicting";
+		}
+		return "none";
+	}
 
-	
-	
     private static boolean copyAsset(AssetManager assetManager,
             String fromAssetPath, String toPath) {
         InputStream in = null;
@@ -330,10 +349,10 @@ public class CamTestActivity extends Activity {
         return bitmap;
     }
 
-	public void predictionHander (Pointer predictions,int predictionsLength){
+	public void predictionHandler (Pointer predictions,int predictionsLength){
 		switch (state){
 			case eWaiting:
-				//Do nothing
+				triggerNextState();
 				break;
 			case ePositiveLearning:
 				JPCNNLibrary.INSTANCE.jpcnn_train(trainerHandle, 1.0f, predictions.getFloatArray(0,predictionsLength), predictionsLength);
@@ -343,12 +362,12 @@ public class CamTestActivity extends Activity {
 				}
 				break;
 			case eNegativeWaiting:
-				//Do nothing
+				triggerNextState();
 				break;
 			case eNegativeLearning:
 				JPCNNLibrary.INSTANCE.jpcnn_train(trainerHandle, 0.0f, predictions.getFloatArray(0,predictionsLength), predictionsLength);
-				posPreC += 1;
-				if (posPreC >= kNegPreT){
+				negPreC += 1;
+				if (negPreC >= kNegPreT){
 					triggerNextState();
 				}
 				break;
