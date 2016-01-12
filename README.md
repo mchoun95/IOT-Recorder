@@ -22,7 +22,7 @@ A tool for recording video of IOT objects and their data in sync
 - Photon API - Communicates with phone [See here!](https://docs.particle.io/reference/firmware/photon/)
 - Deep Belief SDK - Detects IOT objects [See here!](https://github.com/jetpacapp/DeepBeliefSDK)
 
-##References:
+##More references:
 	
 - [Hardware Hookup](https://learn.sparkfun.com/tutorials/load-cell-amplifier-hx711-breakout-hookup-guide?_ga=1.53177064.1747307081.1440772503)
 - [Understanding Neural Networks](http://neuralnetworksanddeeplearning.com/)
