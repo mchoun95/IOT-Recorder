@@ -5,7 +5,8 @@ package com.example.cam;
  */
 
 import java.io.ByteArrayOutputStream;
-import java.io.File; 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,7 @@ import android.hardware.Camera.ShutterCallback;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
@@ -72,8 +74,8 @@ public class CamTestActivity extends Activity {
 	Pointer predictor = null;
 
 	//Limit values for predictions
-	int kPosPreT = 100;
-	int kNegPreT = 100;
+	int kPosPreT = 50;
+	int kNegPreT = 50;
 	int kElePerPre = 4096;
 
 	float kMinSecBetPings = .05f;
@@ -127,15 +129,35 @@ public class CamTestActivity extends Activity {
 			JPCNNLibrary.INSTANCE.jpcnn_destroy_predictor(predictor);
 		}
 		predictor = JPCNNLibrary.INSTANCE.jpcnn_create_predictor_from_trainer(trainerHandle);
+		AssetManager am = ctx.getAssets();
 		String baseFileName = "predictor.txt";
 		String dataDir = ctx.getFilesDir().getAbsolutePath();
 		String preFile = dataDir + "/" + baseFileName;
-		JPCNNLibrary.INSTANCE.jpcnn_save_predictor(preFile,predictor);
+		JPCNNLibrary.INSTANCE.jpcnn_save_predictor(preFile, predictor);
+		Log.i("prediction file", preFile);
+		String newFile = "newFile";
+		File gtem = new File(getDir(newFile),"predictor.txt");
+		File pFile = new File(dataDir,"predictor.txt");
+		try {
+			copy(pFile,gtem);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		state = state.ePredicting;
 	}
 
 	public void resL(){
 		startPosL();
+	}
+
+	public File getDir(String albumName) {
+		// Get the directory for the app's private pictures directory.
+		File file = new File(Environment.getExternalStoragePublicDirectory(
+				Environment.DIRECTORY_DOWNLOADS), albumName);
+		if (!file.mkdirs()) {
+			Log.e("LOG_TAG", "Directory not created");
+		}
+		return file;
 	}
 
 
@@ -328,6 +350,20 @@ public class CamTestActivity extends Activity {
             return false;
         }
     }
+
+	public void copy(File src, File dst) throws IOException {
+		InputStream in = new FileInputStream(src);
+		OutputStream out = new FileOutputStream(dst);
+
+		// Transfer bytes from in to out
+		byte[] buf = new byte[1024];
+		int len;
+		while ((len = in.read(buf)) > 0) {
+			out.write(buf, 0, len);
+		}
+		in.close();
+		out.close();
+	}
 
     private static void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
