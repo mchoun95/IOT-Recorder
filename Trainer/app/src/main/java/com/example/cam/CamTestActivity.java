@@ -231,8 +231,8 @@ public class CamTestActivity extends Activity {
 		copyAsset(am, baseFileName, networkFile);
 	    networkHandle = JPCNNLibrary.INSTANCE.jpcnn_create_network(networkFile);
 
-	    Bitmap lenaBitmap = getBitmapFromAsset("lena.png"); 
-	    classifyBitmap(lenaBitmap);
+	    //Bitmap lenaBitmap = getBitmapFromAsset("lena.png");
+	    //classifyBitmap(lenaBitmap);
 	}
 	
 	private class PredictionLabel implements Comparable<PredictionLabel> {
