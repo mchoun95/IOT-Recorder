@@ -83,6 +83,9 @@ public class CamTestActivity extends Activity {
 	int posPreC;
 	int negPreC;
 
+	float preVal = 0;
+	String labelsText;
+
 	//begin in eWaiting state
 	predictionState state = predictionState.eWaiting;
 
@@ -270,8 +273,8 @@ public class CamTestActivity extends Activity {
 	    JPCNNLibrary.INSTANCE.jpcnn_classify_image(
 	      networkHandle,
 	      imageHandle,
-	      0,
-	      0,
+	      2, //SAMPLE FLAGS: 0 = DEFAULT(CENTERED), 1 = MULTISAMPLE, 2 = RANDOM_SAMPLE
+	      -2, //LAYEROFFSET
 	      predictionsValuesRef,
 	      predictionsLengthRef,
 	      predictionsNamesRef,
@@ -284,17 +287,17 @@ public class CamTestActivity extends Activity {
 		
 	    Pointer predictionsValuesPointer = predictionsValuesRef.getValue(); 
 	    final int predictionsLength = predictionsLengthRef.getValue();
-	    Pointer predictionsNamesPointer = predictionsNamesRef.getValue();
-	    final int predictionsNamesLength = predictionsNamesLengthRef.getValue();
+	    //Pointer predictionsNamesPointer = predictionsNamesRef.getValue();
+	    //final int predictionsNamesLength = predictionsNamesLengthRef.getValue();
 
         System.err.println(String.format("predictionsLength = %d", predictionsLength));
 
 	    float[] predictionsValues = predictionsValuesPointer.getFloatArray(0, predictionsLength);
-	    Pointer[] predictionsNames = predictionsNamesPointer.getPointerArray(0);
+	    //Pointer[] predictionsNames = predictionsNamesPointer.getPointerArray(0);
 
 		//Send predictions to predictionHandler
 		predictionHandler(predictionsValuesPointer, predictionsLength);
-
+		/*
 		ArrayList<PredictionLabel> foundLabels = new ArrayList<PredictionLabel>();
 	    for (int index = 0; index < predictionsLength; index += 1) {
 	    	final float predictionValue = predictionsValues[index];
@@ -309,7 +312,24 @@ public class CamTestActivity extends Activity {
 	    String labelsText = "";
 	    for (PredictionLabel label : foundLabels) {
 	    	labelsText += String.format("%s - %.2f\n", label.name, label.predictionValue);
-	    }
+	    }*/
+		switch(state){
+			case eWaiting:
+				break;
+			case ePositiveLearning:
+				labelsText = Cast(state) + ", progress: " + posPreC*100/kPosPreT + "%";
+				break;
+			case eNegativeWaiting:
+				labelsText = Cast(state);
+				break;
+			case eNegativeLearning:
+				labelsText = Cast(state) + ", progress: " + negPreC*100/kNegPreT + "%";
+				break;
+			case ePredicting:
+				PredictionLabel label = new PredictionLabel("testing",preVal);
+				labelsText = String.format("%s - %.2f\n",label.name, label.predictionValue);
+				break;
+		}
 		Log.i(Cast(state), "state");
 	    labelsView.setText(labelsText);
 	}
@@ -350,6 +370,10 @@ public class CamTestActivity extends Activity {
             return false;
         }
     }
+
+	public void process(){
+
+	}
 
 	public void copy(File src, File dst) throws IOException {
 		InputStream in = new FileInputStream(src);
@@ -408,7 +432,7 @@ public class CamTestActivity extends Activity {
 				}
 				break;
 			case ePredicting:
-				float preVal = JPCNNLibrary.INSTANCE.jpcnn_predict(predictor,predictions,predictionsLength);
+				preVal = JPCNNLibrary.INSTANCE.jpcnn_predict(predictor,predictions,predictionsLength);
 				//setPro(preVal);
 
 				break;
