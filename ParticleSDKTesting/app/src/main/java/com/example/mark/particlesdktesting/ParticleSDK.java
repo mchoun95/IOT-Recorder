@@ -3,6 +3,7 @@ package com.example.mark.particlesdktesting;
         import android.content.Context;
         import android.content.Intent;
         import android.os.Bundle;
+        import android.os.Handler;
         import android.support.v7.app.AppCompatActivity;
         import android.view.View;
         import android.widget.TextView;
@@ -17,10 +18,47 @@ package com.example.mark.particlesdktesting;
 
 public class ParticleSDK extends AppCompatActivity {
 
+    Handler mUpdater = new Handler();
+    Runnable mUpdateView = new Runnable() {
+        @Override
+        public void run() {
+            Async.executeAsync(ParticleCloud.get(ParticleSDK.this), new Async.ApiWork<ParticleCloud, Object>() {
+                @Override
+                public Object callApi(ParticleCloud ParticleCloud) throws ParticleCloudException, IOException {
+                    ParticleCloud.logIn("mchoun95@mit.edu", "mark1995");
+                    ParticleDevice device = ParticleCloud.getDevice("210034000c47343233323032");
+                    Object variable;
+                    try {
+                        variable = device.getVariable("weight");
+                    } catch (ParticleDevice.VariableDoesNotExistException e) {
+                        Toaster.l(ParticleSDK.this, e.getMessage());
+                        variable = -1;
+                    }
+                    return variable;
+                }
+
+                @Override
+                public void onSuccess(Object i) { // this goes on the main thread
+                    tv.setText(i.toString());
+                    tv.invalidate();
+                }
+
+                @Override
+                public void onFailure(ParticleCloudException e) {
+                    e.printStackTrace();
+                }
+            });
+            mUpdater.postDelayed(this, 250);
+        }
+    };
+
+
     private static final String ARG_VALUE = "ARG_VALUE";
     private static final String ARG_DEVICEID = "ARG_DEVICEID";
 
     private TextView tv;
+
+    int i = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,37 +67,10 @@ public class ParticleSDK extends AppCompatActivity {
         tv = (TextView) findViewById(R.id.value);
         tv.setText(String.valueOf(getIntent().getIntExtra(ARG_VALUE, 0)));
 
-        findViewById(R.id.refresh_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        mUpdateView.run();
                 //...
                 // Do network work on background thread
-                Async.executeAsync(ParticleCloud.get(ParticleSDK.this), new Async.ApiWork<ParticleCloud, Object>() {
-                    @Override
-                    public Object callApi(ParticleCloud ParticleCloud) throws ParticleCloudException, IOException {
-                        ParticleDevice device = ParticleCloud.getDevice(getIntent().getStringExtra(ARG_DEVICEID));
-                        Object variable;
-                        try {
-                            variable = device.getVariable("analogvalue");
-                        } catch (ParticleDevice.VariableDoesNotExistException e) {
-                            Toaster.l(ParticleSDK.this, e.getMessage());
-                            variable = -1;
-                        }
-                        return variable;
-                    }
 
-                    @Override
-                    public void onSuccess(Object i) { // this goes on the main thread
-                        tv.setText(i.toString());
-                    }
-
-                    @Override
-                    public void onFailure(ParticleCloudException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-        });
     }
 
     public static Intent buildIntent(Context ctx, Integer value, String deviceid) {
@@ -72,6 +83,9 @@ public class ParticleSDK extends AppCompatActivity {
 
 
 }
+
+
+
 /*
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
