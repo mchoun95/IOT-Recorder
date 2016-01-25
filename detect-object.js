@@ -8,24 +8,32 @@ spark.on('login', function() {
 
   myDevices.then(
     function(devices) {
-        console.log("My device: ", devices[0]);
+        //console.log("My device: ", devices[0]);
         var core = devices[0];
         // test sending signal
-        core.stopSignal(function(err, data) {
+        //console.log('- variables: ' + core.variables);
+        /*core.stopSignal(function(err, data) {
             if (err) {
                 console.log('Error sending a signal to the core:', err);
             } else {
                 console.log('Core signal sent successfully:', data);
             }
+        });*/
+        core.getVariable('weight', function(err, data) {
+          if (err) {
+            console.log('An error occurred while getting attrs:', err);
+          } else {
+            console.log('Device attr retrieved successfully:', data);
+          }
         });
         // test calling a function in the core
-        core.callFunction('blinky', 'on', function(err, data) {
+        /*core.callFunction('blinky', 'on', function(err, data) {
             if (err) {
                 console.log("An error occurred: ", err);
             } else {
                 console.log("Function called successfully: ", data);
             }
-        });
+        });*/
     }
   );
 });
