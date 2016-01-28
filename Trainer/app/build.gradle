@@ -20,4 +20,5 @@ android {
 
 dependencies {
     compile files('libs/deepbelief.jar')
+    compile 'io.particle:cloudsdk:0.3.1'
 }
