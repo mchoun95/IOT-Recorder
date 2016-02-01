@@ -109,7 +109,7 @@ public class CamActivity extends Activity {
                 @Override
                 public void onSuccess(Object i) { // this goes on the main thread
                     if (preVal > .6) {
-                        tv.setText(i.toString());
+                        tv.setText("Weight: " + i.toString());
                         tv.invalidate();
                     }else{
                         tv.setText("");
